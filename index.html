@@ -1,77 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Roblox Game Stats</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Triexemoi Roblox Hub</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
       background-color: #121212;
       color: #f0f0f0;
-      font-family: 'Segoe UI', sans-serif;
       padding: 20px;
     }
     h1, h2 {
-      color: #00ffff;
+      color: #ffffff;
     }
     .section {
       margin-bottom: 30px;
-    }
-    select {
-      padding: 8px;
-      background-color: #1e1e1e;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 5px;
     }
     ul {
       list-style-type: none;
       padding: 0;
     }
     li {
-      background-color: #1e1e1e;
       margin: 5px 0;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,255,255,0.1);
     }
-    .count {
+    .game, .event {
+      background-color: #1e1e1e;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(255,255,255,0.1);
+    }
+    .live-count {
       font-weight: bold;
       color: #00ff88;
     }
+    a {
+      color: #66ccff;
+      text-decoration: none;
+    }
+    select {
+      padding: 5px;
+      margin-top: 10px;
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #555;
+    }
   </style>
-  <script src="lang.js" defer></script>
+</head>
+<body>
+
+  <div class="section">
+    <h1 id="langTitle">🌐 Language Options</h1>
+    <select id="languageSelector"></select>
+    <ul id="languageList"></ul>
+  </div>
+
+  <div class="section">
+    <h1 id="featuredTitle">🎮 Featured Games</h1>
+
+    <div class="game">
+      <h2 id="growTitle"><a href="https://www.roblox.com/games/7436755782" target="_blank">Grow a Garden</a></h2>
+      <p id="growPlaying"><span>Currently Playing:</span> <span class="live-count" id="gardenCount">Loading...</span></p>
+      <p id="growVisits">Visits: Loading...</p>
+      <p id="growFavorites">Favorites: Loading...</p>
+    </div>
+
+    <div class="game">
+      <h2 id="brainrotTitle"><a href="https://www.roblox.com/games/109983668079237" target="_blank">Steal a Brainrot</a></h2>
+      <p id="brainrotPlaying"><span>Currently Playing:</span> <span class="live-count" id="brainrotCount">Loading...</span></p>
+      <p id="brainrotVisits">Visits: Loading...</p>
+      <p id="brainrotFavorites">Favorites: Loading...</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h1 id="eventTitle">📅 Event Game!</h1>
+    <p id="eventNote">® Don't Copy My Website. Powered by Github.com</p>
+
+    <div class="event">
+      <h2 id="event1Title">🧠 Steal a Brainrot Event</h2>
+      <p id="event1Desc">ADMIN ABUSE WAR!</p>
+      <p id="event1Time">Sat, Aug 23 at 9:00 PM</p>
+      <p><a id="event1Link" href="https://www.roblox.com/events/7300321812015743467" target="_blank">View Official Event</a></p>
+    </div>
+
+    <div class="event">
+      <h2 id="event2Title">🌱 Grow a Garden Event</h2>
+      <p id="event2Desc">ADMIN WAR EVENT</p>
+      <p id="event2Time">Sat, Aug 23 at 9:00 PM</p>
+      <p><a id="event2Link" href="https://www.roblox.com/events/1412207234460156417" target="_blank">View Official Event</a></p>
+    </div>
+  </div>
+
+  <script src="lang.js"></script>
   <script>
-    const game = {
-      name: "Roblox",
-      id: "12345",
-      playerCount: 10000
+    const games = {
+      garden: { universeId: "7436755782" },
+      brainrot: { universeId: "109983668079237" }
     };
 
-    async function fetchPlayerCount() {
+    async function fetchPlayers(universeId) {
       try {
-        const res = await fetch(`https://api.example.com/game/${game.id}/playerCount`);
+        const res = await fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`);
         const data = await res.json();
-        game.playerCount = data.count;
-        document.getElementById("playerCount").innerText = game.playerCount;
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu người chơi:", error);
+        const playing = data?.data?.[0]?.playing;
+        return typeof playing === "number" ? playing : "N/A";
+      } catch (err) {
+        console.error("Lỗi fetch người chơi:", err);
+        return "Error";
       }
     }
 
-    async function updatePlayerCount() {
-      await fetchPlayerCount();
-      setTimeout(updatePlayerCount, 10000);
+    async function updateCounts() {
+      const gardenPlayers = await fetchPlayers(games.garden.universeId);
+      const brainrotPlayers = await fetchPlayers(games.brainrot.universeId);
+
+      document.getElementById("gardenCount").textContent = gardenPlayers.toLocaleString();
+      document.getElementById("brainrotCount").textContent = brainrotPlayers.toLocaleString();
     }
 
-    window.onload = () => {
-      updatePlayerCount();
-    };
+    updateCounts();
+    setInterval(updateCounts, 10000);
+
+    const selector = document.getElementById("languageSelector");
+    selector.addEventListener("change", e => {
+      const lang = e.target.value;
+      localStorage.setItem("preferredLang", lang);
+      loadLanguage(lang);
+    });
+
+    const savedLang = localStorage.getItem("preferredLang") || "en";
+    loadLanguage(savedLang);
+    selector.value = savedLang;
   </script>
-</head>
-<body>
-  <div class="section">
-    <label for="languageSelect">🌐 Language:</label>
-    <select id="languageSelect">
-      <option value="en">English</option>
-      <option value="es">
+</body>
+  </html>
